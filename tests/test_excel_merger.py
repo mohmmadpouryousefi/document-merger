@@ -2,20 +2,18 @@
 Unit tests for Excel merger functionality.
 """
 
-import os
-import shutil
-
 # Add src to path for testing
+import os
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+import shutil
 import tempfile
 import unittest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import openpyxl
 from openpyxl.workbook import Workbook
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from core.excel_merger import ExcelMerger
 

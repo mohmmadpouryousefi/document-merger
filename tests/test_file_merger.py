@@ -2,16 +2,16 @@
 Unit tests for file merger orchestrator.
 """
 
-import os
-import shutil
-
 # Add src to path for testing
+import os
 import sys
-import tempfile
-import unittest
-from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+import shutil
+import tempfile
+import unittest
+from unittest.mock import patch
 
 from core.file_merger import FileMerger
 

@@ -5,7 +5,6 @@ Test utilities and helper functions for Document Merger tests.
 import os
 import shutil
 import tempfile
-from pathlib import Path
 
 import openpyxl
 from openpyxl.workbook import Workbook
@@ -285,6 +284,7 @@ class TestAssertions:
                 input_size = os.path.getsize(input_file)
                 # Output should generally be larger (but not always due to compression)
                 test_case.assertGreater(output_size, 0, "Output should have content")
+                test_case.assertGreater(input_size, 0, "Input should have content")
 
 
 class MockObjects:

@@ -426,7 +426,7 @@ class FileManagerGUI:
             content += f"File type: {preview['file_type'].upper()}\n"
             content += f"Files to merge: {preview['file_count']}\n"
             content += f"Total size: {preview['total_size_formatted']}\n"
-            estimated_size = preview['estimated_output_size_formatted']
+            estimated_size = preview["estimated_output_size_formatted"]
             content += f"Estimated output size: {estimated_size}\n\n"
 
             content += "FILES:\n"

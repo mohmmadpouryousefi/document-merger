@@ -2,19 +2,18 @@
 Unit tests for PDF merger functionality.
 """
 
-import os
-import shutil
-
 # Add src to path for testing
+import os
 import sys
-import tempfile
-import unittest
-from pathlib import Path
-from unittest.mock import mock_open, patch
-
-import PyPDF2
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+import shutil
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import PyPDF2
 
 from core.pdf_merger import PDFMerger
 
@@ -239,6 +238,8 @@ startxref
 
         with patch("core.pdf_merger.PyPDF2.PdfMerger") as mock_merger_class:
             mock_merger = mock_merger_class.return_value
+            mock_merger.merge.return_value = None
+            mock_merger.write.return_value = None
 
             result = self.merger.merge_pdfs([pdf1], nested_output)
 

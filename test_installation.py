@@ -17,26 +17,33 @@ def test_imports():
     try:
         from src.core.file_detector import FileTypeDetector
 
-        print("✓ FileTypeDetector imported successfully")
+        detector = FileTypeDetector()
+        print(f"✓ FileTypeDetector imported successfully: {type(detector).__name__}")
 
         from src.core.file_merger import FileMerger
 
-        print("✓ FileMerger imported successfully")
+        merger = FileMerger()
+        print(f"✓ FileMerger imported successfully: {type(merger).__name__}")
 
         from src.core.pdf_merger import PDFMerger
 
-        print("✓ PDFMerger imported successfully")
+        pdf_merger = PDFMerger()
+        print(f"✓ PDFMerger imported successfully: {type(pdf_merger).__name__}")
 
         from src.core.excel_merger import ExcelMerger
 
-        print("✓ ExcelMerger imported successfully")
+        excel_merger = ExcelMerger()
+        print(f"✓ ExcelMerger imported successfully: {type(excel_merger).__name__}")
 
         from src.cli.cli_interface import CLIInterface
 
-        print("✓ CLIInterface imported successfully")
+        cli = CLIInterface()
+        print(f"✓ CLIInterface imported successfully: {type(cli).__name__}")
 
         from src.gui.main_window import FileManagerGUI
 
+        # Don't instantiate GUI in headless environment, just verify import
+        print(f"✓ FileManagerGUI imported successfully: {FileManagerGUI.__name__}")
         print("✓ FileManagerGUI imported successfully")
 
         return True
@@ -166,10 +173,12 @@ def create_sample_files():
             f.write("Sample Files Directory\n")
             f.write("=====================\n\n")
             f.write(
-                "This directory contains sample files for testing the File Merger application.\n"
+                "This directory contains sample files for testing the "
+                "File Merger application.\n"
             )
             f.write(
-                "To test with actual PDF or Excel files, add them to this directory.\n\n"
+                "To test with actual PDF or Excel files, add them to "
+                "this directory.\n\n"
             )
             f.write("Supported formats:\n")
             f.write("- PDF: .pdf\n")

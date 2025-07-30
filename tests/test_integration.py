@@ -7,7 +7,6 @@ import shutil
 import sys
 import tempfile
 import unittest
-from pathlib import Path
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -111,7 +110,6 @@ startxref
 
     def create_sample_excel_files(self):
         """Create sample Excel files for testing."""
-        import openpyxl
         from openpyxl.workbook import Workbook
 
         # Create first Excel file
@@ -287,10 +285,10 @@ startxref
             # Add 1000 rows of data
             for row in range(2, 1002):
                 ws.cell(row=row, column=1, value=row - 1)
-                ws.cell(row=row, column=2, value=f"Item_{row-1}")
+                ws.cell(row=row, column=2, value=f"Item_{row - 1}")
                 ws.cell(row=row, column=3, value=(row - 1) * 10)
-                ws.cell(row=row, column=4, value=f"Category_{(row-1) % 5}")
-                ws.cell(row=row, column=5, value=f"2023-{(row-1) % 12 + 1:02d}-01")
+                ws.cell(row=row, column=4, value=f"Category_{(row - 1) % 5}")
+                ws.cell(row=row, column=5, value=f"2023-{(row - 1) % 12 + 1:02d}-01")
 
             wb.save(excel_path)
             large_excel_files.append(excel_path)
@@ -326,7 +324,8 @@ startxref
 
         merger = FileMerger()
 
-        # The merger should handle this gracefully - either succeed with warnings or fail appropriately
+        # The merger should handle this gracefully - either succeed with
+        # warnings or fail appropriately
         merge_result = merger.merge_files(mixed_valid_invalid, output_file)
 
         # Either the merge succeeds with warnings about the corrupted file,
@@ -384,7 +383,7 @@ startxref
                     c.drawString(
                         100, 750, f"Performance test file {i}, page {page + 1}"
                     )
-                    c.drawString(100, 730, f"Content for benchmarking")
+                    c.drawString(100, 730, "Content for benchmarking")
                     c.showPage()
 
                 c.save()

@@ -24,9 +24,11 @@ def test_pdf_bookmark_fix():
 
         # Initialize PDF merger
         pdf_merger = PDFMerger()
+        print(f"✓ PDF merger initialized: {type(pdf_merger).__name__}")
 
         # Test the merger initialization
         merger = PyPDF2.PdfMerger()
+        print(f"✓ PyPDF2 merger initialized: {type(merger).__name__}")
 
         # Create a simple test PDF in memory to test the API
         try:
@@ -142,7 +144,7 @@ def main():
         print("using 'Add bookmarks to PDF' option in the GUI.")
         print("\nYou can now safely use PDF merging with bookmarks enabled.")
     else:
-        print(f"\n⚠️ Some tests failed. The bookmark fix may need attention.")
+        print("\n⚠️ Some tests failed. The bookmark fix may need attention.")
 
     return passed == total
 
