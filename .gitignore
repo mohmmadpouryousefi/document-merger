@@ -45,3 +45,9 @@ Thumbs.db
 merged_files/
 temp/
 sample_files/
+
+# Coverage reports
+.coverage
+htmlcov/
+*.cover
+.pytest_cache/
