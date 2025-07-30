@@ -13,8 +13,8 @@ APP_AUTHOR = "File Merger Team"
 # File settings
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
 MAX_FILES_PER_MERGE = 50
-SUPPORTED_PDF_EXTENSIONS = ['.pdf']
-SUPPORTED_EXCEL_EXTENSIONS = ['.xlsx', '.xls', '.xlsm']
+SUPPORTED_PDF_EXTENSIONS = [".pdf"]
+SUPPORTED_EXCEL_EXTENSIONS = [".xlsx", ".xls", ".xlsm"]
 
 # Default paths
 DEFAULT_OUTPUT_DIR = str(Path.home() / "Desktop")
