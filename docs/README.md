@@ -15,6 +15,7 @@ This directory contains comprehensive documentation for the Document Merger appl
 - [API Reference](api/README.md)
 - [Usage Examples](examples/README.md)
 - [Troubleshooting](troubleshooting.md)
+- [Testing & CI/CD](phase2_testing.md)
 
 ## Contributing to Documentation
 

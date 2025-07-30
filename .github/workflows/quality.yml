@@ -1,0 +1,325 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy bandit
+
+    - name: Check code formatting with Black
+      run: |
+        black --check --verbose src/ tests/
+
+    - name: Check import sorting with isort
+      run: |
+        isort --check-only --verbose src/ tests/
+
+    - name: Lint with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 src/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+    - name: Type checking with mypy
+      run: |
+        mypy src/ --ignore-missing-imports --no-strict-optional
+
+    - name: Security check with bandit
+      run: |
+        bandit -r src/ -ll
+
+  documentation-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check documentation links
+      run: |
+        # Check for broken internal links in documentation
+        python -c "
+        import os
+        import re
+        from pathlib import Path
+        
+        def check_markdown_links(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Find markdown links [text](path)
+            links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+            broken_links = []
+            
+            for text, link in links:
+                # Skip external links
+                if link.startswith('http'):
+                    continue
+                
+                # Convert relative path to absolute
+                link_path = Path(file_path).parent / link
+                
+                if not link_path.exists():
+                    broken_links.append(f'{text} -> {link}')
+            
+            return broken_links
+        
+        all_broken = []
+        for md_file in Path('.').rglob('*.md'):
+            broken = check_markdown_links(md_file)
+            if broken:
+                all_broken.extend([f'{md_file}: {link}' for link in broken])
+        
+        if all_broken:
+            print('Broken internal links found:')
+            for link in all_broken:
+                print(f'  ✗ {link}')
+            exit(1)
+        else:
+            print('✓ All internal documentation links are valid')
+        "
+
+    - name: Check documentation completeness
+      run: |
+        # Verify all required documentation files exist
+        required_docs=(
+          "README.md"
+          "docs/README.md"
+          "docs/examples/getting_started.md"
+          "docs/examples/common_use_cases.md"
+          "docs/api/README.md"
+          "docs/troubleshooting.md"
+          "tests/README.md"
+        )
+        
+        missing_docs=()
+        for doc in "${required_docs[@]}"; do
+          if [[ ! -f "$doc" ]]; then
+            missing_docs+=("$doc")
+          fi
+        done
+        
+        if [[ ${#missing_docs[@]} -gt 0 ]]; then
+          echo "Missing required documentation files:"
+          printf '  ✗ %s\n' "${missing_docs[@]}"
+          exit 1
+        else
+          echo "✓ All required documentation files are present"
+        fi
+
+    - name: Validate code examples in documentation
+      run: |
+        python -c "
+        import ast
+        import re
+        from pathlib import Path
+        
+        def extract_and_validate_python_code(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Extract Python code blocks
+            pattern = r'```python\n(.*?)\n```'
+            matches = re.findall(pattern, content, re.DOTALL)
+            
+            errors = []
+            for i, code in enumerate(matches):
+                try:
+                    # Basic syntax validation
+                    ast.parse(code)
+                except SyntaxError as e:
+                    errors.append(f'Block {i+1}: {e}')
+            
+            return errors
+        
+        all_errors = []
+        for md_file in Path('.').rglob('*.md'):
+            errors = extract_and_validate_python_code(md_file)
+            if errors:
+                all_errors.extend([f'{md_file}: {error}' for error in errors])
+        
+        if all_errors:
+            print('Python code syntax errors in documentation:')
+            for error in all_errors:
+                print(f'  ✗ {error}')
+            exit(1)
+        else:
+            print('✓ All Python code examples have valid syntax')
+        "
+
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety pip-audit
+
+    - name: Check for known security vulnerabilities
+      run: |
+        safety check --json --output safety-report.json || true
+        pip-audit --format=json --output=pip-audit-report.json || true
+
+    - name: Check dependency compatibility
+      run: |
+        pip install -r requirements.txt
+        pip check
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          pip-audit-report.json
+
+  test-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov reportlab
+
+    - name: Run tests with coverage
+      run: |
+        python -m pytest tests/ --cov=src --cov-report=html --cov-report=xml --cov-report=term
+
+    - name: Check coverage threshold
+      run: |
+        python -m coverage report --fail-under=80
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: |
+          htmlcov/
+          coverage.xml
+
+  complexity-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install radon xenon
+
+    - name: Analyze code complexity
+      run: |
+        # Cyclomatic complexity
+        radon cc src/ --min=B --show-complexity
+
+        # Maintainability index
+        radon mi src/ --min=B
+
+        # Check for high complexity functions
+        xenon --max-absolute=B --max-modules=B --max-average=A src/
+
+    - name: Generate complexity report
+      run: |
+        echo "# Code Complexity Report" > complexity-report.md
+        echo "" >> complexity-report.md
+        echo "## Cyclomatic Complexity" >> complexity-report.md
+        radon cc src/ --json >> complexity-report.md
+        echo "" >> complexity-report.md
+        echo "## Maintainability Index" >> complexity-report.md
+        radon mi src/ --json >> complexity-report.md
+
+    - name: Upload complexity report
+      uses: actions/upload-artifact@v3
+      with:
+        name: complexity-report
+        path: complexity-report.md
+
+  pre-commit-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install pre-commit
+      run: |
+        python -m pip install --upgrade pip
+        pip install pre-commit
+
+    - name: Create pre-commit config
+      run: |
+        cat > .pre-commit-config.yaml << EOF
+        repos:
+        - repo: https://github.com/psf/black
+          rev: 23.3.0
+          hooks:
+          - id: black
+            language_version: python3.10
+
+        - repo: https://github.com/pycqa/isort
+          rev: 5.12.0
+          hooks:
+          - id: isort
+
+        - repo: https://github.com/pycqa/flake8
+          rev: 6.0.0
+          hooks:
+          - id: flake8
+            args: [--max-line-length=88]
+
+        - repo: https://github.com/pre-commit/pre-commit-hooks
+          rev: v4.4.0
+          hooks:
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+          - id: check-yaml
+          - id: check-added-large-files
+        EOF
+
+    - name: Run pre-commit on all files
+      run: |
+        pre-commit run --all-files --show-diff-on-failure
