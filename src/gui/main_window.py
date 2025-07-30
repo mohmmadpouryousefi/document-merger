@@ -345,109 +345,112 @@ class FileManagerGUI:
         self.info_text.delete(1.0, tk.END)
 
         if not self.selected_files:
-            self.info_text.insert(tk.END, "No files selected")
+            info = "No files selected"
         else:
-            # Show overall information
-            file_type, valid_files, errors = self.detector.validate_files(
-                self.selected_files
-            )
-
-            info = f"Total files: {len(self.selected_files)}\n"
-
-            if errors:
-                info += f"Errors: {len(errors)}\n"
-                for error in errors:
-                    info += f"  • {error}\n"
-            elif file_type:
-                info += f"File type: {file_type.upper()}\n"
-                info += f"Valid files: {len(valid_files)}\n"
-
-                # Calculate total size
-                total_size = sum(self.detector.get_file_size(f) for f in valid_files)
-                info += f"Total size: {self.detector.format_file_size(total_size)}\n"
-
-            info += "\nFiles:\n"
-
-            # Show individual file information
-            selected_indices = self.file_listbox.curselection()
-            if selected_indices:
-                for index in selected_indices:
-                    if index < len(self.selected_files):
-                        file_info = self.merger.get_file_info(
-                            self.selected_files[index]
-                        )
-                        info += f"\n{index + 1}. {file_info['name']}\n"
-                        info += (
-                            f"   Size: {file_info.get('size_formatted', 'Unknown')}\n"
-                        )
-                        info += f"   Type: {file_info.get('type', 'Unknown')}\n"
-
-                        if file_info.get("type") == "pdf" and "pages" in file_info:
-                            info += f"   Pages: {file_info['pages']}\n"
-                        elif file_info.get("type") == "excel" and "sheets" in file_info:
-                            info += f"   Sheets: {file_info['sheets']}\n"
-                            if "sheet_names" in file_info:
-                                sheet_names = file_info["sheet_names"][:3]
-                                if len(file_info["sheet_names"]) > 3:
-                                    sheet_names.append("...")
-                                info += f"   Sheet names: {', '.join(sheet_names)}\n"
-            else:
-                for i, file_path in enumerate(self.selected_files, 1):
-                    info += f"  {i}. {Path(file_path).name}\n"
+            info = self._generate_file_info_text()
 
         self.info_text.insert(tk.END, info)
         self.info_text.configure(state=tk.DISABLED)
 
+    def _generate_file_info_text(self) -> str:
+        """Generate comprehensive file information text."""
+        file_type, valid_files, errors = self.detector.validate_files(
+            self.selected_files
+        )
+
+        info = self._build_overall_info(file_type, valid_files, errors)
+        info += self._build_file_details()
+
+        return info
+
+    def _build_overall_info(
+        self, file_type: str, valid_files: list, errors: list
+    ) -> str:
+        """Build overall file information section."""
+        info = f"Total files: {len(self.selected_files)}\n"
+
+        if errors:
+            info += f"Errors: {len(errors)}\n"
+            for error in errors:
+                info += f"  • {error}\n"
+        elif file_type:
+            info += f"File type: {file_type.upper()}\n"
+            info += f"Valid files: {len(valid_files)}\n"
+
+            # Calculate total size
+            total_size = sum(self.detector.get_file_size(f) for f in valid_files)
+            info += f"Total size: {self.detector.format_file_size(total_size)}\n"
+
+        return info
+
+    def _build_file_details(self) -> str:
+        """Build detailed file information section."""
+        info = "\nFiles:\n"
+        selected_indices = self.file_listbox.curselection()
+
+        if selected_indices:
+            info += self._build_selected_file_details(selected_indices)
+        else:
+            info += self._build_basic_file_list()
+
+        return info
+
+    def _build_selected_file_details(self, selected_indices: tuple) -> str:
+        """Build detailed information for selected files."""
+        info = ""
+        for index in selected_indices:
+            if index < len(self.selected_files):
+                file_info = self.merger.get_file_info(self.selected_files[index])
+                info += self._format_single_file_info(index, file_info)
+        return info
+
+    def _format_single_file_info(self, index: int, file_info: dict) -> str:
+        """Format information for a single file."""
+        info = f"\n{index + 1}. {file_info['name']}\n"
+        info += f"   Size: {file_info.get('size_formatted', 'Unknown')}\n"
+        info += f"   Type: {file_info.get('type', 'Unknown')}\n"
+
+        # Add type-specific information
+        if file_info.get("type") == "pdf" and "pages" in file_info:
+            info += f"   Pages: {file_info['pages']}\n"
+        elif file_info.get("type") == "excel" and "sheets" in file_info:
+            info += f"   Sheets: {file_info['sheets']}\n"
+            if "sheet_names" in file_info:
+                sheet_names = file_info["sheet_names"][:3]
+                if len(file_info["sheet_names"]) > 3:
+                    sheet_names.append("...")
+                info += f"   Sheet names: {', '.join(sheet_names)}\n"
+
+        return info
+
+    def _build_basic_file_list(self) -> str:
+        """Build basic file list when no files are selected."""
+        info = ""
+        for i, file_path in enumerate(self.selected_files, 1):
+            info += f"  {i}. {Path(file_path).name}\n"
+        return info
+
     def _preview_merge(self):
         """Preview the merge operation."""
-        if len(self.selected_files) < 2:
-            messagebox.showwarning("Warning", "Please select at least 2 files to merge")
+        if not self._validate_merge_requirements():
             return
 
         preview = self.merger.preview_merge(self.selected_files)
+        self._display_preview_window(preview)
 
-        # Create preview window
-        preview_window = tk.Toplevel(self.root)
-        preview_window.title("Merge Preview")
-        preview_window.geometry("600x500")
-        preview_window.transient(self.root)
-        preview_window.grab_set()
+    def _validate_merge_requirements(self) -> bool:
+        """Validate that merge requirements are met."""
+        if len(self.selected_files) < 2:
+            messagebox.showwarning("Warning", "Please select at least 2 files to merge")
+            return False
+        return True
 
-        # Preview content
-        preview_text = scrolledtext.ScrolledText(preview_window, wrap=tk.WORD)
-        preview_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    def _display_preview_window(self, preview: dict) -> None:
+        """Display the preview in a new window."""
+        preview_window = self._create_preview_window()
+        preview_text = self._create_preview_text_widget(preview_window)
 
-        if preview["errors"]:
-            content = "ERRORS FOUND:\n\n"
-            for error in preview["errors"]:
-                content += f"• {error}\n"
-        else:
-            content = "MERGE PREVIEW\n\n"
-            content += f"File type: {preview['file_type'].upper()}\n"
-            content += f"Files to merge: {preview['file_count']}\n"
-            content += f"Total size: {preview['total_size_formatted']}\n"
-            estimated_size = preview["estimated_output_size_formatted"]
-            content += f"Estimated output size: {estimated_size}\n\n"
-
-            content += "FILES:\n"
-            for i, file_info in enumerate(preview["files_info"], 1):
-                status = "✓" if file_info["accessible"] else "✗"
-                content += f"\n{i}. {status} {file_info['name']}\n"
-                content += f"   Size: {file_info['size_formatted']}\n"
-
-                if preview["file_type"] == "pdf" and "pages" in file_info:
-                    content += f"   Pages: {file_info['pages']}\n"
-                elif preview["file_type"] == "excel" and "sheets" in file_info:
-                    content += f"   Sheets: {file_info['sheets']}\n"
-                    if "sheet_names" in file_info:
-                        content += (
-                            f"   Sheet names: {', '.join(file_info['sheet_names'])}\n"
-                        )
-
-            if preview["warnings"]:
-                content += "\nWARNINGS:\n"
-                for warning in preview["warnings"]:
-                    content += f"• {warning}\n"
+        content = self._generate_preview_content(preview)
 
         preview_text.insert(tk.END, content)
         preview_text.configure(state=tk.DISABLED)
@@ -456,6 +459,81 @@ class FileManagerGUI:
         ttk.Button(preview_window, text="Close", command=preview_window.destroy).pack(
             pady=(0, 10)
         )
+
+    def _create_preview_window(self) -> tk.Toplevel:
+        """Create and configure the preview window."""
+        preview_window = tk.Toplevel(self.root)
+        preview_window.title("Merge Preview")
+        preview_window.geometry("600x500")
+        preview_window.transient(self.root)
+        preview_window.grab_set()
+        return preview_window
+
+    def _create_preview_text_widget(
+        self, parent: tk.Widget
+    ) -> scrolledtext.ScrolledText:
+        """Create and configure the preview text widget."""
+        preview_text = scrolledtext.ScrolledText(parent, wrap=tk.WORD)
+        preview_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        return preview_text
+
+    def _generate_preview_content(self, preview: dict) -> str:
+        """Generate the content for the preview window."""
+        if preview["errors"]:
+            return self._generate_error_content(preview["errors"])
+        else:
+            return self._generate_success_content(preview)
+
+    def _generate_error_content(self, errors: list) -> str:
+        """Generate error content for preview."""
+        content = "ERRORS FOUND:\n\n"
+        for error in errors:
+            content += f"• {error}\n"
+        return content
+
+    def _generate_success_content(self, preview: dict) -> str:
+        """Generate success content for preview."""
+        content = "MERGE PREVIEW\n\n"
+        content += self._generate_summary_section(preview)
+        content += self._generate_files_section(preview)
+        content += self._generate_warnings_section(preview)
+        return content
+
+    def _generate_summary_section(self, preview: dict) -> str:
+        """Generate the summary section of preview content."""
+        content = f"File type: {preview['file_type'].upper()}\n"
+        content += f"Files to merge: {preview['file_count']}\n"
+        content += f"Total size: {preview['total_size_formatted']}\n"
+        estimated_size = preview["estimated_output_size_formatted"]
+        content += f"Estimated output size: {estimated_size}\n\n"
+        return content
+
+    def _generate_files_section(self, preview: dict) -> str:
+        """Generate the files section of preview content."""
+        content = "FILES:\n"
+        for i, file_info in enumerate(preview["files_info"], 1):
+            status = "✓" if file_info["accessible"] else "✗"
+            content += f"\n{i}. {status} {file_info['name']}\n"
+            content += f"   Size: {file_info['size_formatted']}\n"
+
+            if preview["file_type"] == "pdf" and "pages" in file_info:
+                content += f"   Pages: {file_info['pages']}\n"
+            elif preview["file_type"] == "excel" and "sheets" in file_info:
+                content += f"   Sheets: {file_info['sheets']}\n"
+                if "sheet_names" in file_info:
+                    content += (
+                        f"   Sheet names: {', '.join(file_info['sheet_names'])}\n"
+                    )
+        return content
+
+    def _generate_warnings_section(self, preview: dict) -> str:
+        """Generate the warnings section of preview content."""
+        content = ""
+        if preview["warnings"]:
+            content += "\nWARNINGS:\n"
+            for warning in preview["warnings"]:
+                content += f"• {warning}\n"
+        return content
 
     def _validate_files(self):
         """Validate all selected files."""

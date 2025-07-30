@@ -88,14 +88,7 @@ class CLIInterface:
 
     def _get_input_files(self) -> List[str]:
         """Get input files from user."""
-        print("\nEnter file paths to merge (minimum 2 files required):")
-        print("You can:")
-        print("1. Enter file paths one by one (press Enter after each path)")
-        print("2. Enter multiple paths separated by semicolons")
-        print("3. Type 'browse' to browse for files")
-        print("4. Type 'done' when finished entering paths")
-        print()
-
+        self._print_file_input_instructions()
         files = []
 
         while True:
@@ -104,27 +97,8 @@ class CLIInterface:
 
                 if user_input.lower() == "done":
                     break
-                elif user_input.lower() == "browse":
-                    browsed_files = self._browse_files()
-                    files.extend(browsed_files)
-                    print(f"Added {len(browsed_files)} files from browser")
-                elif ";" in user_input:
-                    # Multiple files separated by semicolons
-                    paths = [
-                        p.strip().strip('"').strip("'") for p in user_input.split(";")
-                    ]
-                    for path in paths:
-                        if path and Path(path).exists():
-                            files.append(str(Path(path).resolve()))
-                        elif path:
-                            print(f"  Warning: File not found: {path}")
-                elif user_input:
-                    # Single file path
-                    path = user_input.strip('"').strip("'")
-                    if Path(path).exists():
-                        files.append(str(Path(path).resolve()))
-                    else:
-                        print(f"  Warning: File not found: {path}")
+
+                files = self._handle_user_input(user_input, files)
 
                 if files:
                     print(f"  Current files: {len(files)}")
@@ -134,6 +108,54 @@ class CLIInterface:
             except Exception as e:
                 print(f"  Error: {str(e)}")
 
+        return files
+
+    def _print_file_input_instructions(self):
+        """Print instructions for file input."""
+        print("\nEnter file paths to merge (minimum 2 files required):")
+        print("You can:")
+        print("1. Enter file paths one by one (press Enter after each path)")
+        print("2. Enter multiple paths separated by semicolons")
+        print("3. Type 'browse' to browse for files")
+        print("4. Type 'done' when finished entering paths")
+        print()
+
+    def _handle_user_input(self, user_input: str, files: List[str]) -> List[str]:
+        """Handle different types of user input for file selection."""
+        if user_input.lower() == "browse":
+            return self._handle_browse_input(files)
+        elif ";" in user_input:
+            return self._handle_multiple_files_input(user_input, files)
+        elif user_input:
+            return self._handle_single_file_input(user_input, files)
+        return files
+
+    def _handle_browse_input(self, files: List[str]) -> List[str]:
+        """Handle browse file input."""
+        browsed_files = self._browse_files()
+        files.extend(browsed_files)
+        print(f"Added {len(browsed_files)} files from browser")
+        return files
+
+    def _handle_multiple_files_input(
+        self, user_input: str, files: List[str]
+    ) -> List[str]:
+        """Handle multiple files separated by semicolons."""
+        paths = [p.strip().strip('"').strip("'") for p in user_input.split(";")]
+        for path in paths:
+            if path and Path(path).exists():
+                files.append(str(Path(path).resolve()))
+            elif path:
+                print(f"  Warning: File not found: {path}")
+        return files
+
+    def _handle_single_file_input(self, user_input: str, files: List[str]) -> List[str]:
+        """Handle single file path input."""
+        path = user_input.strip('"').strip("'")
+        if Path(path).exists():
+            files.append(str(Path(path).resolve()))
+        else:
+            print(f"  Warning: File not found: {path}")
         return files
 
     def _browse_files(self) -> List[str]:
@@ -174,32 +196,53 @@ class CLIInterface:
 
         preview = self.merger.preview_merge(input_files)
 
-        if preview["errors"]:
-            print("ERRORS:")
-            for error in preview["errors"]:
-                print(f"  ✗ {error}")
+        if self._handle_preview_errors(preview):
             return
 
+        self._display_preview_summary(preview)
+        self._display_file_details(preview)
+        self._display_preview_warnings(preview)
+
+    def _handle_preview_errors(self, preview: dict) -> bool:
+        """Handle and display preview errors."""
+        if not preview.get("errors"):
+            return False
+
+        print("ERRORS:")
+        for error in preview["errors"]:
+            print(f"  ✗ {error}")
+        return True
+
+    def _display_preview_summary(self, preview: dict) -> None:
+        """Display merge summary information."""
         print(f"File type: {preview['file_type'].upper()}")
         print(f"Files to merge: {preview['file_count']}")
         print(f"Total size: {preview['total_size_formatted']}")
         print(f"Estimated output size: {preview['estimated_output_size_formatted']}")
 
+    def _display_file_details(self, preview: dict) -> None:
+        """Display detailed file information."""
         print("\nFiles:")
         for i, file_info in enumerate(preview["files_info"], 1):
             status = "✓" if file_info["accessible"] else "✗"
             size_info = file_info["size_formatted"]
             print(f"  {i}. {status} {file_info['name']} ({size_info})")
 
-            if preview["file_type"] == "pdf" and "pages" in file_info:
-                print(f"      Pages: {file_info['pages']}")
-            elif preview["file_type"] == "excel" and "sheets" in file_info:
-                sheet_names = file_info["sheet_names"][:3]
-                more_indicator = "..." if len(file_info["sheet_names"]) > 3 else ""
-                sheet_info = f"{', '.join(sheet_names)}{more_indicator}"
-                print(f"      Sheets: {file_info['sheets']} ({sheet_info})")
+            self._display_file_content_info(file_info, preview["file_type"])
 
-        if preview["warnings"]:
+    def _display_file_content_info(self, file_info: dict, file_type: str) -> None:
+        """Display content-specific file information."""
+        if file_type == "pdf" and "pages" in file_info:
+            print(f"      Pages: {file_info['pages']}")
+        elif file_type == "excel" and "sheets" in file_info:
+            sheet_names = file_info["sheet_names"][:3]
+            more_indicator = "..." if len(file_info["sheet_names"]) > 3 else ""
+            sheet_info = f"{', '.join(sheet_names)}{more_indicator}"
+            print(f"      Sheets: {file_info['sheets']} ({sheet_info})")
+
+    def _display_preview_warnings(self, preview: dict) -> None:
+        """Display preview warnings."""
+        if preview.get("warnings"):
             print("\nWARNINGS:")
             for warning in preview["warnings"]:
                 print(f"  ⚠ {warning}")
@@ -220,6 +263,14 @@ class CLIInterface:
         if len(files) <= 2:
             return files
 
+        if not self._ask_for_reorder(files):
+            return files
+
+        self._display_current_order(files)
+        return self._get_new_order(files)
+
+    def _ask_for_reorder(self, files: List[str]) -> bool:
+        """Ask user if they want to reorder files."""
         while True:
             response = (
                 input(f"\nReorder files? Current order is 1-{len(files)} (y/n): ")
@@ -227,12 +278,14 @@ class CLIInterface:
                 .lower()
             )
             if response in ["n", "no"]:
-                return files
+                return False
             elif response in ["y", "yes"]:
-                break
+                return True
             else:
                 print("Please enter 'y' or 'n'")
 
+    def _display_current_order(self, files: List[str]) -> None:
+        """Display current file order to user."""
         print("\nCurrent order:")
         for i, file_path in enumerate(files, 1):
             print(f"  {i}. {Path(file_path).name}")
@@ -240,39 +293,49 @@ class CLIInterface:
         print(f"\nEnter new order as space-separated numbers (1-{len(files)}):")
         print("Example: 3 1 2 4")
 
+    def _get_new_order(self, files: List[str]) -> List[str]:
+        """Get new file order from user."""
         while True:
             try:
                 order_input = input("New order: ").strip()
                 new_order = [int(x) - 1 for x in order_input.split()]
 
-                if len(new_order) != len(files):
-                    print(f"Error: Please provide exactly {len(files)} numbers")
-                    continue
-
-                if set(new_order) != set(range(len(files))):
-                    error_msg = (
-                        f"Error: Please use each number from 1 to "
-                        f"{len(files)} exactly once"
-                    )
-                    print(error_msg)
+                if not self._validate_order(new_order, files):
                     continue
 
                 reordered_files = self.merger.reorder_files(files, new_order)
 
-                print("\nNew order:")
-                for i, file_path in enumerate(reordered_files, 1):
-                    print(f"  {i}. {Path(file_path).name}")
-
-                confirm = input("\nConfirm this order? (y/n): ").strip().lower()
-                if confirm in ["y", "yes"]:
+                if self._confirm_new_order(reordered_files):
                     return reordered_files
-                else:
-                    continue
 
             except ValueError:
                 print("Error: Please enter valid numbers separated by spaces")
             except Exception as e:
                 print(f"Error: {str(e)}")
+
+    def _validate_order(self, new_order: List[int], files: List[str]) -> bool:
+        """Validate user-provided order sequence."""
+        if len(new_order) != len(files):
+            print(f"Error: Please provide exactly {len(files)} numbers")
+            return False
+
+        if set(new_order) != set(range(len(files))):
+            error_msg = (
+                f"Error: Please use each number from 1 to " f"{len(files)} exactly once"
+            )
+            print(error_msg)
+            return False
+
+        return True
+
+    def _confirm_new_order(self, reordered_files: List[str]) -> bool:
+        """Confirm new file order with user."""
+        print("\nNew order:")
+        for i, file_path in enumerate(reordered_files, 1):
+            print(f"  {i}. {Path(file_path).name}")
+
+        confirm = input("\nConfirm this order? (y/n): ").strip().lower()
+        return confirm in ["y", "yes"]
 
     def _get_output_file(self, input_files: List[str]) -> str:
         """Get output file path from user."""

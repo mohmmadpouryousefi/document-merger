@@ -50,7 +50,35 @@ class FileMerger:
         Returns:
             Dictionary with operation results
         """
-        result = {
+        result = self._initialize_merge_result(input_files, output_file)
+
+        try:
+            file_type, accessible_files = self._prepare_files_for_merge(
+                input_files, result
+            )
+            if not accessible_files:
+                return result
+
+            result["file_type"] = file_type
+            output_file = self._finalize_output_path(
+                accessible_files, file_type, output_file, result
+            )
+
+            success = self._execute_merge(
+                file_type, accessible_files, output_file, add_bookmarks
+            )
+            self._finalize_merge_result(result, success, accessible_files, file_type)
+
+        except Exception as e:
+            self._handle_merge_exception(result, e)
+
+        return result
+
+    def _initialize_merge_result(
+        self, input_files: List[str], output_file: str
+    ) -> Dict[str, Any]:
+        """Initialize the merge result dictionary."""
+        return {
             "success": False,
             "message": "",
             "file_type": None,
@@ -60,74 +88,98 @@ class FileMerger:
             "warnings": [],
         }
 
-        try:
-            # Validate input files
-            file_type, valid_files, errors = self.detector.validate_files(input_files)
+    def _prepare_files_for_merge(
+        self, input_files: List[str], result: Dict[str, Any]
+    ) -> tuple:
+        """Prepare and validate files for merging."""
+        file_type, valid_files, errors = self.detector.validate_files(input_files)
 
-            if errors:
-                result["errors"] = errors
-                result["message"] = "; ".join(errors)
-                return result
+        if errors:
+            result["errors"] = errors
+            result["message"] = "; ".join(errors)
+            return None, []
 
-            if not valid_files:
-                result["errors"] = ["No valid files found"]
-                result["message"] = "No valid files found"
-                return result
+        if not valid_files:
+            result["errors"] = ["No valid files found"]
+            result["message"] = "No valid files found"
+            return None, []
 
-            result["file_type"] = file_type
+        return file_type, self._filter_accessible_files(valid_files, file_type, result)
 
-            # Additional validation for file accessibility and corruption
-            accessible_files = []
-            for file_path in valid_files:
-                if self.detector.is_file_accessible(file_path):
-                    if self._validate_file_integrity(file_path, file_type):
-                        accessible_files.append(file_path)
-                    else:
-                        result["warnings"].append(f"File may be corrupted: {file_path}")
+    def _filter_accessible_files(
+        self, valid_files: List[str], file_type: str, result: Dict[str, Any]
+    ) -> List[str]:
+        """Filter files for accessibility and integrity."""
+        accessible_files = []
+        for file_path in valid_files:
+            if self.detector.is_file_accessible(file_path):
+                if self._validate_file_integrity(file_path, file_type):
+                    accessible_files.append(file_path)
                 else:
-                    result["errors"].append(f"File not accessible: {file_path}")
-
-            if not accessible_files:
-                result["message"] = "No accessible files found"
-                return result
-
-            # Generate output filename if not provided or if directory is provided
-            output_path = Path(output_file)
-            if output_path.is_dir() or not output_path.suffix:
-                output_file = self._generate_output_filename(
-                    accessible_files, file_type, str(output_path)
-                )
-                result["output_file"] = output_file
-
-            # Perform the merge based on file type
-            if file_type == "pdf":
-                success = self._merge_pdf_files(
-                    accessible_files, output_file, add_bookmarks
-                )
-            elif file_type == "excel":
-                success = self._merge_excel_files(accessible_files, output_file)
+                    result["warnings"].append(f"File may be corrupted: {file_path}")
             else:
-                result["errors"].append(f"Unsupported file type: {file_type}")
-                result["message"] = f"Unsupported file type: {file_type}"
-                return result
+                result["errors"].append(f"File not accessible: {file_path}")
 
-            if success:
-                result["success"] = True
-                result[
-                    "message"
-                ] = f"Successfully merged {len(accessible_files)} {file_type} files"
-                self.logger.info(f"Merge completed: {result['message']}")
-            else:
-                result["message"] = f"Failed to merge {file_type} files"
-                result["errors"].append(result["message"])
+        if not accessible_files:
+            result["message"] = "No accessible files found"
 
-        except Exception as e:
-            error_msg = f"Unexpected error during merge: {str(e)}"
-            result["errors"].append(error_msg)
-            result["message"] = error_msg
-            self.logger.error(error_msg, exc_info=True)
+        return accessible_files
 
-        return result
+    def _finalize_output_path(
+        self,
+        accessible_files: List[str],
+        file_type: str,
+        output_file: str,
+        result: Dict[str, Any],
+    ) -> str:
+        """Generate final output file path."""
+        output_path = Path(output_file)
+        if output_path.is_dir() or not output_path.suffix:
+            output_file = self._generate_output_filename(
+                accessible_files, file_type, str(output_path)
+            )
+            result["output_file"] = output_file
+        return output_file
+
+    def _execute_merge(
+        self,
+        file_type: str,
+        accessible_files: List[str],
+        output_file: str,
+        add_bookmarks: bool,
+    ) -> bool:
+        """Execute the actual merge operation."""
+        if file_type == "pdf":
+            return self._merge_pdf_files(accessible_files, output_file, add_bookmarks)
+        elif file_type == "excel":
+            return self._merge_excel_files(accessible_files, output_file)
+        else:
+            return False
+
+    def _finalize_merge_result(
+        self,
+        result: Dict[str, Any],
+        success: bool,
+        accessible_files: List[str],
+        file_type: str,
+    ) -> None:
+        """Finalize the merge result based on success status."""
+        if success:
+            result["success"] = True
+            result[
+                "message"
+            ] = f"Successfully merged {len(accessible_files)} {file_type} files"
+            self.logger.info(f"Merge completed: {result['message']}")
+        else:
+            result["message"] = f"Failed to merge {file_type} files"
+            result["errors"].append(result["message"])
+
+    def _handle_merge_exception(self, result: Dict[str, Any], e: Exception) -> None:
+        """Handle exceptions during merge operation."""
+        error_msg = f"Unexpected error during merge: {str(e)}"
+        result["errors"].append(error_msg)
+        result["message"] = error_msg
+        self.logger.error(error_msg, exc_info=True)
 
     def _validate_file_integrity(self, file_path: str, file_type: str) -> bool:
         """
