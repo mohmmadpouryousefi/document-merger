@@ -4,6 +4,7 @@ Unit tests for PDF merger functionality.
 
 import os
 import shutil
+
 # Add src to path for testing
 import sys
 import tempfile
@@ -53,10 +54,10 @@ endobj
 
 xref
 0 4
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
 trailer
 <<
 /Size 4

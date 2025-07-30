@@ -49,7 +49,7 @@ python -m unittest tests.test_pdf_merger.TestPDFMerger.test_merge_pdfs_success -
 tests/
 ├── __init__.py              # Test package initialization
 ├── test_pdf_merger.py       # PDF functionality tests
-├── test_excel_merger.py     # Excel functionality tests  
+├── test_excel_merger.py     # Excel functionality tests
 ├── test_file_merger.py      # File merger orchestrator tests
 ├── test_integration.py      # End-to-end integration tests
 ├── test_utils.py           # Test utilities and helpers
@@ -234,21 +234,21 @@ When adding new tests:
 ```python
 class TestNewFeature(unittest.TestCase):
     """Test cases for new feature."""
-    
+
     def setUp(self):
         """Set up test fixtures."""
         self.test_dir = TestDirectoryManager()
         self.test_dir.setup_test_directory()
-    
+
     def tearDown(self):
         """Clean up test fixtures."""
         self.test_dir.cleanup()
-    
+
     def test_feature_success(self):
         """Test successful feature operation."""
         # Test implementation
         pass
-    
+
     def test_feature_error_handling(self):
         """Test feature error handling."""
         # Test error scenarios

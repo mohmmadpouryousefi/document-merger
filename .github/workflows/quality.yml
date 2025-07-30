@@ -59,34 +59,34 @@ jobs:
         import os
         import re
         from pathlib import Path
-        
+
         def check_markdown_links(file_path):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             # Find markdown links [text](path)
             links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
             broken_links = []
-            
+
             for text, link in links:
                 # Skip external links
                 if link.startswith('http'):
                     continue
-                
+
                 # Convert relative path to absolute
                 link_path = Path(file_path).parent / link
-                
+
                 if not link_path.exists():
                     broken_links.append(f'{text} -> {link}')
-            
+
             return broken_links
-        
+
         all_broken = []
         for md_file in Path('.').rglob('*.md'):
             broken = check_markdown_links(md_file)
             if broken:
                 all_broken.extend([f'{md_file}: {link}' for link in broken])
-        
+
         if all_broken:
             print('Broken internal links found:')
             for link in all_broken:
@@ -108,14 +108,14 @@ jobs:
           "docs/troubleshooting.md"
           "tests/README.md"
         )
-        
+
         missing_docs=()
         for doc in "${required_docs[@]}"; do
           if [[ ! -f "$doc" ]]; then
             missing_docs+=("$doc")
           fi
         done
-        
+
         if [[ ${#missing_docs[@]} -gt 0 ]]; then
           echo "Missing required documentation files:"
           printf '  ✗ %s\n' "${missing_docs[@]}"
@@ -130,15 +130,15 @@ jobs:
         import ast
         import re
         from pathlib import Path
-        
+
         def extract_and_validate_python_code(file_path):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             # Extract Python code blocks
             pattern = r'```python\n(.*?)\n```'
             matches = re.findall(pattern, content, re.DOTALL)
-            
+
             errors = []
             for i, code in enumerate(matches):
                 try:
@@ -146,15 +146,15 @@ jobs:
                     ast.parse(code)
                 except SyntaxError as e:
                     errors.append(f'Block {i+1}: {e}')
-            
+
             return errors
-        
+
         all_errors = []
         for md_file in Path('.').rglob('*.md'):
             errors = extract_and_validate_python_code(md_file)
             if errors:
                 all_errors.extend([f'{md_file}: {error}' for error in errors])
-        
+
         if all_errors:
             print('Python code syntax errors in documentation:')
             for error in all_errors:

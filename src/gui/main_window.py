@@ -4,10 +4,8 @@ Graphical User Interface for the file merger application.
 
 import threading
 import tkinter as tk
-import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
-from typing import List, Optional
 
 from ..core.file_detector import FileTypeDetector
 from ..core.file_merger import FileMerger
@@ -330,15 +328,15 @@ class FileManagerGUI:
                     import os
 
                     os.startfile(file_path)  # Windows
-                except:
+                except Exception:
                     try:
                         import subprocess
 
                         subprocess.run(["open", file_path])  # macOS
-                    except:
+                    except Exception:
                         try:
                             subprocess.run(["xdg-open", file_path])  # Linux
-                        except:
+                        except Exception:
                             messagebox.showerror("Error", "Could not open file")
 
     def _update_file_info(self):
@@ -424,11 +422,12 @@ class FileManagerGUI:
             for error in preview["errors"]:
                 content += f"• {error}\n"
         else:
-            content = f"MERGE PREVIEW\n\n"
+            content = "MERGE PREVIEW\n\n"
             content += f"File type: {preview['file_type'].upper()}\n"
             content += f"Files to merge: {preview['file_count']}\n"
             content += f"Total size: {preview['total_size_formatted']}\n"
-            content += f"Estimated output size: {preview['estimated_output_size_formatted']}\n\n"
+            estimated_size = preview['estimated_output_size_formatted']
+            content += f"Estimated output size: {estimated_size}\n\n"
 
             content += "FILES:\n"
             for i, file_info in enumerate(preview["files_info"], 1):
@@ -446,7 +445,7 @@ class FileManagerGUI:
                         )
 
             if preview["warnings"]:
-                content += f"\nWARNINGS:\n"
+                content += "\nWARNINGS:\n"
                 for warning in preview["warnings"]:
                     content += f"• {warning}\n"
 
@@ -580,7 +579,7 @@ class FileManagerGUI:
 
                     output_dir = str(Path(result["output_file"]).parent)
                     os.startfile(output_dir)  # Windows
-                except:
+                except Exception:
                     pass
         else:
             self._update_status("Merge failed")

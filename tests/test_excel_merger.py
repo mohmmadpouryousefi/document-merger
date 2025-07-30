@@ -4,6 +4,7 @@ Unit tests for Excel merger functionality.
 
 import os
 import shutil
+
 # Add src to path for testing
 import sys
 import tempfile

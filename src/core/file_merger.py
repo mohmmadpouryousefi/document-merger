@@ -5,7 +5,7 @@ Main file merger orchestrator that coordinates different file type mergers.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .excel_merger import ExcelMerger
 from .file_detector import FileTypeDetector
@@ -113,9 +113,9 @@ class FileMerger:
 
             if success:
                 result["success"] = True
-                result["message"] = (
-                    f"Successfully merged {len(accessible_files)} {file_type} files"
-                )
+                result[
+                    "message"
+                ] = f"Successfully merged {len(accessible_files)} {file_type} files"
                 self.logger.info(f"Merge completed: {result['message']}")
             else:
                 result["message"] = f"Failed to merge {file_type} files"

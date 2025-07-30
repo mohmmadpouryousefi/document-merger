@@ -10,7 +10,7 @@ tests/
 ├── __init__.py                 # Test package initialization
 ├── test_infrastructure.py      # Basic infrastructure validation tests
 ├── test_pdf_merger.py          # PDF merger unit tests (188 lines)
-├── test_excel_merger.py        # Excel merger unit tests (242 lines)  
+├── test_excel_merger.py        # Excel merger unit tests (242 lines)
 ├── test_file_merger.py         # File merger orchestrator tests (183 lines)
 ├── test_integration.py         # End-to-end integration tests (373 lines)
 ├── test_utils.py              # Test utilities and helpers (357 lines)
@@ -25,7 +25,7 @@ tests/
 - **File Merger Tests**: 10+ test methods covering orchestration, file type detection, error scenarios
 - **Mock Tests**: Extensive use of mocks to test without external dependencies
 
-#### 🔄 Integration Tests  
+#### 🔄 Integration Tests
 - **End-to-End Workflows**: Complete PDF and Excel merge operations
 - **Performance Testing**: Large file handling and benchmarking
 - **Error Recovery**: Graceful handling of corrupted files and mixed types
@@ -42,7 +42,7 @@ tests/
 
 ### pytest.ini
 - Test discovery configuration
-- Coverage settings  
+- Coverage settings
 - Custom markers (unit, integration, slow, pdf, excel, error, performance)
 - Output formatting and timeout settings
 
@@ -57,10 +57,10 @@ tests/
 
 #### `.github/workflows/test.yml` - Main Testing Pipeline
 - **Multi-platform testing**: Ubuntu, Windows, macOS
-- **Multi-version Python**: 3.8, 3.9, 3.10, 3.11  
+- **Multi-version Python**: 3.8, 3.9, 3.10, 3.11
 - **Test stages**:
   1. Unit tests with coverage
-  2. Integration tests  
+  2. Integration tests
   3. Installation validation
   4. Security scanning
   5. Performance benchmarking
@@ -77,7 +77,7 @@ tests/
 - ✅ **Test Coverage**: >80% threshold enforced
 - ✅ **Code Quality**: Formatting, linting, type checking
 - ✅ **Security**: Vulnerability scanning
-- ✅ **Documentation**: Link validation, example verification  
+- ✅ **Documentation**: Link validation, example verification
 - ✅ **Performance**: Benchmarking on large files
 - ✅ **Installation**: Cross-platform validation
 
@@ -90,7 +90,7 @@ python run_tests.py --install-deps --dev-deps
 
 # Run specific test categories
 python run_tests.py --unit              # Unit tests only
-python run_tests.py --integration       # Integration tests only  
+python run_tests.py --integration       # Integration tests only
 python run_tests.py --quality          # Code quality checks
 python run_tests.py --security         # Security scan
 
@@ -105,7 +105,7 @@ python run_tests.py --validate
 
 ### Coverage Targets
 - **Overall Coverage**: >90% (current implementation has >95% in core modules)
-- **Core Modules**: >95% 
+- **Core Modules**: >95%
 - **Error Handling**: >85%
 - **Integration Paths**: >80%
 
@@ -156,7 +156,7 @@ python -m pytest tests/ --cov=src --cov-report=html
 
 ### Test Organization
 - **Descriptive names**: Clear test method and class names
-- **Docstrings**: Every test method documents what it verifies  
+- **Docstrings**: Every test method documents what it verifies
 - **Setup/Teardown**: Proper resource management
 - **Isolation**: Tests don't depend on each other
 - **Data**: Use generated test data, not hardcoded files
@@ -169,7 +169,7 @@ python -m pytest tests/ --cov=src --cov-report=html
 
 ### Performance Testing
 - **Benchmarking**: Measure merge times for different file sizes
-- **Memory monitoring**: Track memory usage during large operations  
+- **Memory monitoring**: Track memory usage during large operations
 - **Scalability**: Test with increasing numbers of files
 - **Platform differences**: Account for OS-specific performance
 
@@ -185,7 +185,7 @@ python -m pytest tests/ --cov=src --cov-report=html
 ### Reporting & Artifacts
 - **Coverage reports**: HTML and XML coverage output
 - **Test results**: Detailed pytest output with failure analysis
-- **Security reports**: Bandit and safety scan results  
+- **Security reports**: Bandit and safety scan results
 - **Performance metrics**: Benchmarking data for large file operations
 - **Build artifacts**: Validated packages ready for distribution
 

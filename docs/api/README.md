@@ -8,7 +8,7 @@ This directory contains detailed API documentation for Document Merger's core mo
 - [`PDFMerger`](pdf_merger.md) - Main PDF merging functionality
 - [`PDFProcessor`](pdf_processor.md) - Low-level PDF operations
 
-### Excel Processing  
+### Excel Processing
 - [`ExcelMerger`](excel_merger.md) - Excel file merging capabilities
 - [`SheetProcessor`](sheet_processor.md) - Individual worksheet operations
 
@@ -38,7 +38,7 @@ from src.core.excel_merger import ExcelMerger
 
 merger = ExcelMerger()
 merger.add_file("data1.xlsx")
-merger.add_file("data2.xlsx") 
+merger.add_file("data2.xlsx")
 merger.merge("combined.xlsx")
 ```
 

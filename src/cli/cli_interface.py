@@ -4,9 +4,8 @@ Command Line Interface for the file merger application.
 
 import argparse
 import os
-import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from ..core.file_detector import FileTypeDetector
 from ..core.file_merger import FileMerger
@@ -186,22 +185,22 @@ class CLIInterface:
         print(f"Total size: {preview['total_size_formatted']}")
         print(f"Estimated output size: {preview['estimated_output_size_formatted']}")
 
-        print(f"\nFiles:")
+        print("\nFiles:")
         for i, file_info in enumerate(preview["files_info"], 1):
             status = "✓" if file_info["accessible"] else "✗"
-            print(
-                f"  {i}. {status} {file_info['name']} ({file_info['size_formatted']})"
-            )
+            size_info = file_info["size_formatted"]
+            print(f"  {i}. {status} {file_info['name']} ({size_info})")
 
             if preview["file_type"] == "pdf" and "pages" in file_info:
                 print(f"      Pages: {file_info['pages']}")
             elif preview["file_type"] == "excel" and "sheets" in file_info:
-                print(
-                    f"      Sheets: {file_info['sheets']} ({', '.join(file_info['sheet_names'][:3])}{'...' if len(file_info['sheet_names']) > 3 else ''})"
-                )
+                sheet_names = file_info["sheet_names"][:3]
+                more_indicator = "..." if len(file_info["sheet_names"]) > 3 else ""
+                sheet_info = f"{', '.join(sheet_names)}{more_indicator}"
+                print(f"      Sheets: {file_info['sheets']} ({sheet_info})")
 
         if preview["warnings"]:
-            print(f"\nWARNINGS:")
+            print("\nWARNINGS:")
             for warning in preview["warnings"]:
                 print(f"  ⚠ {warning}")
 
@@ -234,12 +233,12 @@ class CLIInterface:
             else:
                 print("Please enter 'y' or 'n'")
 
-        print(f"\nCurrent order:")
+        print("\nCurrent order:")
         for i, file_path in enumerate(files, 1):
             print(f"  {i}. {Path(file_path).name}")
 
         print(f"\nEnter new order as space-separated numbers (1-{len(files)}):")
-        print(f"Example: 3 1 2 4")
+        print("Example: 3 1 2 4")
 
         while True:
             try:
@@ -251,14 +250,16 @@ class CLIInterface:
                     continue
 
                 if set(new_order) != set(range(len(files))):
-                    print(
-                        f"Error: Please use each number from 1 to {len(files)} exactly once"
+                    error_msg = (
+                        f"Error: Please use each number from 1 to "
+                        f"{len(files)} exactly once"
                     )
+                    print(error_msg)
                     continue
 
                 reordered_files = self.merger.reorder_files(files, new_order)
 
-                print(f"\nNew order:")
+                print("\nNew order:")
                 for i, file_path in enumerate(reordered_files, 1):
                     print(f"  {i}. {Path(file_path).name}")
 
@@ -279,13 +280,13 @@ class CLIInterface:
         file_type = self.detector.detect_file_type(input_files[0])
         extension = ".pdf" if file_type == "pdf" else ".xlsx"
 
-        print(f"\nOutput file options:")
+        print("\nOutput file options:")
         print("1. Enter full path (with filename)")
         print("2. Enter directory path (filename will be auto-generated)")
         print("3. Press Enter for auto-generated filename in current directory")
 
         while True:
-            output_path = input(f"\nOutput path: ").strip().strip('"').strip("'")
+            output_path = input("\nOutput path: ").strip().strip('"').strip("'")
 
             if not output_path:
                 # Auto-generate in current directory
@@ -338,7 +339,7 @@ class CLIInterface:
 
     def _perform_merge(self, input_files: List[str], output_file: str, options: dict):
         """Perform the actual merge operation."""
-        print(f"\n" + "=" * 50)
+        print("\n" + "=" * 50)
         print("STARTING MERGE")
         print("=" * 50)
 
@@ -346,7 +347,7 @@ class CLIInterface:
             input_files, output_file, add_bookmarks=options.get("add_bookmarks", True)
         )
 
-        print(f"\n" + "=" * 50)
+        print("\n" + "=" * 50)
         print("MERGE RESULTS")
         print("=" * 50)
 
@@ -362,12 +363,12 @@ class CLIInterface:
             print(f"✗ FAILED: {result['message']}")
 
             if result["errors"]:
-                print(f"\nErrors:")
+                print("\nErrors:")
                 for error in result["errors"]:
                     print(f"  • {error}")
 
         if result["warnings"]:
-            print(f"\nWarnings:")
+            print("\nWarnings:")
             for warning in result["warnings"]:
                 print(f"  ⚠ {warning}")
 

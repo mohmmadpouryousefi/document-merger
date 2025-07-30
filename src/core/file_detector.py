@@ -86,8 +86,9 @@ class FileTypeDetector:
 
         # Check if all files are of the same type
         if len(detected_types) > 1:
+            type_list = ", ".join(detected_types)
             error_messages.append(
-                f"All files must be of the same type. Found: {', '.join(detected_types)}"
+                f"All files must be of the same type. Found: {type_list}"
             )
             return None, [], error_messages
         elif len(detected_types) == 1:

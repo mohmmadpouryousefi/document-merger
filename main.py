@@ -20,12 +20,9 @@ Usage:
 """
 
 import argparse
-import sys
-from pathlib import Path
 
-from src.core.file_merger import FileMerger
-from src.gui.main_window import FileManagerGUI
 from src.cli.cli_interface import CLIInterface
+from src.gui.main_window import FileManagerGUI
 
 
 def main():
@@ -34,22 +31,15 @@ def main():
         description="Merge multiple files of the same type (PDF or Excel)"
     )
     parser.add_argument(
-        "--cli", 
-        action="store_true", 
-        help="Use command line interface instead of GUI"
+        "--cli", action="store_true", help="Use command line interface instead of GUI"
     )
     parser.add_argument(
-        "--files", 
-        nargs="+", 
-        help="Input files to merge (CLI mode only)"
+        "--files", nargs="+", help="Input files to merge (CLI mode only)"
     )
-    parser.add_argument(
-        "--output", 
-        help="Output file path (CLI mode only)"
-    )
-    
+    parser.add_argument("--output", help="Output file path (CLI mode only)")
+
     args = parser.parse_args()
-    
+
     if args.cli:
         # Use CLI interface
         cli = CLIInterface()

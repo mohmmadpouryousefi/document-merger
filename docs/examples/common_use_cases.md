@@ -82,14 +82,14 @@ from datetime import datetime, timedelta
 
 def create_weekly_report():
     merger = PDFMerger()
-    
+
     # Get files from last 7 days
     for i in range(7):
         date = datetime.now() - timedelta(days=i)
         filename = f"daily_report_{date.strftime('%Y%m%d')}.pdf"
         if os.path.exists(filename):
             merger.add_file(filename, outline_item=f"Day {i+1}")
-    
+
     merger.merge("weekly_report.pdf")
 ```
 

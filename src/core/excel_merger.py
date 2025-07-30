@@ -7,12 +7,13 @@ from pathlib import Path
 from typing import Dict, List
 
 import openpyxl
-from openpyxl.styles import NamedStyle
 from openpyxl.workbook import Workbook
 
 
 class ExcelMerger:
-    """Handles merging of Excel files while preserving formatting, formulas, and styles."""
+    """
+    Handles merging of Excel files while preserving formatting, formulas, and styles.
+    """
 
     def __init__(self):
         """Initialize the Excel merger."""
@@ -202,7 +203,7 @@ class ExcelMerger:
                         ),
                     }
                 )
-            except:
+            except Exception:
                 pass
 
             workbook.close()
@@ -219,7 +220,8 @@ class ExcelMerger:
         Merge specific sheets from multiple Excel files.
 
         Args:
-            file_sheet_mapping: Dictionary mapping file paths to list of sheet names to include
+            file_sheet_mapping: Dictionary mapping file paths to list of sheet
+                names to include
             output_file: Output Excel file path
 
         Returns:

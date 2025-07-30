@@ -136,8 +136,8 @@ pip install -r requirements.txt
    ```bash
    # Windows
    C:\Python39\python.exe -m src.cli.cli_interface
-   
-   # macOS/Linux  
+
+   # macOS/Linux
    /usr/bin/python3 -m src.cli.cli_interface
    ```
 2. **Activate virtual environment first:**
@@ -186,7 +186,7 @@ pip install -r requirements.txt
    ```bash
    # Windows
    dir C:\
-   
+
    # macOS/Linux
    df -h
    ```
@@ -194,7 +194,7 @@ pip install -r requirements.txt
    ```bash
    # Windows
    del /s /q %TEMP%\*
-   
+
    # macOS/Linux
    rm -rf /tmp/*
    ```
@@ -215,10 +215,10 @@ pip install -r requirements.txt
    ```bash
    # Windows
    taskmgr
-   
+
    # macOS
    Activity Monitor
-   
+
    # Linux
    htop
    ```

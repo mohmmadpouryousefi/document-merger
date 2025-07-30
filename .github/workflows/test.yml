@@ -176,15 +176,15 @@ jobs:
         python -c "
         import ast
         import re
-        
+
         def extract_python_code(file_path):
             with open(file_path, 'r') as f:
                 content = f.read()
-            
+
             # Extract Python code blocks
             pattern = r'```python\n(.*?)\n```'
             matches = re.findall(pattern, content, re.DOTALL)
-            
+
             for i, code in enumerate(matches):
                 try:
                     ast.parse(code)
@@ -193,13 +193,13 @@ jobs:
                     print(f'✗ Code block {i+1} in {file_path} has syntax error: {e}')
                     return False
             return True
-        
+
         # Check documentation files
         docs_files = [
             'docs/examples/python_api_examples.md',
             'docs/api/pdf_merger.md'
         ]
-        
+
         all_valid = True
         for doc_file in docs_files:
             try:
@@ -207,7 +207,7 @@ jobs:
                     all_valid = False
             except FileNotFoundError:
                 print(f'Warning: {doc_file} not found')
-        
+
         if not all_valid:
             exit(1)
         print('All documentation code examples are valid!')

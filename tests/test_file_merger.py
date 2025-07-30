@@ -4,6 +4,7 @@ Unit tests for file merger orchestrator.
 
 import os
 import shutil
+
 # Add src to path for testing
 import sys
 import tempfile
@@ -55,7 +56,6 @@ class TestFileMerger(unittest.TestCase):
         ), patch.object(
             self.merger.pdf_merger, "merge_pdfs", return_value=True
         ) as mock_merge:
-
             pdf_files = ["file1.pdf", "file2.pdf"]
             output_file = "merged.pdf"
 
@@ -89,7 +89,6 @@ class TestFileMerger(unittest.TestCase):
         ), patch.object(
             self.merger.pdf_merger, "merge_with_bookmarks", return_value=True
         ) as mock_merge:
-
             pdf_files = ["chapter1.pdf", "chapter2.pdf"]
             output_file = "book.pdf"
 
@@ -123,7 +122,6 @@ class TestFileMerger(unittest.TestCase):
         ), patch.object(
             self.merger.excel_merger, "merge_excel_files", return_value=True
         ) as mock_merge:
-
             excel_files = ["data1.xlsx", "data2.xlsx"]
             output_file = "combined.xlsx"
 
@@ -150,7 +148,6 @@ class TestFileMerger(unittest.TestCase):
             "validate_files",
             return_value=("txt", [], ["Unsupported file type: txt"]),
         ):
-
             text_files = ["file1.txt", "file2.txt"]
             output_file = "combined.txt"
 
@@ -179,7 +176,6 @@ class TestFileMerger(unittest.TestCase):
                 ["All files must be of the same type. Found: excel, pdf"],
             ),
         ):
-
             mixed_files = ["document.pdf", "spreadsheet.xlsx"]
             output_file = "combined.pdf"
 
@@ -248,7 +244,6 @@ class TestFileMerger(unittest.TestCase):
         ), patch.object(
             self.merger.excel_merger, "merge_excel_files", return_value=True
         ):
-
             excel_files = ["data1.xlsx", "data2.xlsx"]
 
             result = self.merger.merge_files(excel_files, "output.xlsx")
@@ -286,7 +281,6 @@ class TestFileMerger(unittest.TestCase):
             "get_pdf_info",
             return_value={"pages": 5, "title": "Test Doc"},
         ):
-
             pdf_file = "document.pdf"
 
             result = self.merger.get_file_info(pdf_file)
@@ -318,7 +312,6 @@ class TestFileMerger(unittest.TestCase):
             "get_excel_info",
             return_value={"sheets": 3, "sheet_names": ["Sheet1", "Sheet2", "Sheet3"]},
         ):
-
             excel_file = "spreadsheet.xlsx"
 
             result = self.merger.get_file_info(excel_file)
@@ -370,7 +363,6 @@ class TestFileMergerErrorHandling(unittest.TestCase):
             "validate_files",
             side_effect=Exception("Detector error"),
         ):
-
             result = self.merger.merge_files(["file1.pdf"], "output.pdf")
 
             self.assertFalse(result["success"])
@@ -388,7 +380,6 @@ class TestFileMergerErrorHandling(unittest.TestCase):
         ), patch.object(
             self.merger.pdf_merger, "merge_pdfs", side_effect=Exception("Merge error")
         ):
-
             result = self.merger.merge_files(["file1.pdf"], "output.pdf")
 
             self.assertFalse(result["success"])

@@ -42,7 +42,7 @@ success = merger.merge_pdfs(
 - `input_files` (List[str]): List of input PDF file paths
 - `output_file` (str): Output PDF file path
 
-**Returns:** 
+**Returns:**
 - `bool`: True if successful, False otherwise
 
 **Raises:**
@@ -75,7 +75,7 @@ success = merger.merge_with_bookmarks(
 - `input_files` (List[str]): List of input PDF file paths
 - `output_file` (str): Output PDF file path
 
-**Returns:** 
+**Returns:**
 - `bool`: True if successful, False otherwise
 
 **Features:**
@@ -104,7 +104,7 @@ is_valid = merger.validate_pdf("document.pdf")
 **Parameters:**
 - `file_path` (str): Path to the PDF file
 
-**Returns:** 
+**Returns:**
 - `bool`: True if valid, False if corrupted or unreadable
 
 **Example:**
@@ -127,13 +127,13 @@ info = merger.get_pdf_info("document.pdf")
 **Parameters:**
 - `file_path` (str): Path to the PDF file
 
-**Returns:** 
+**Returns:**
 - `dict`: Dictionary containing PDF metadata and properties
 
 **Return Dictionary Keys:**
 - `pages` (int): Number of pages
 - `title` (str or None): Document title
-- `author` (str or None): Document author  
+- `author` (str or None): Document author
 - `subject` (str or None): Document subject
 - `creator` (str or None): Document creator application
 - `encrypted` (bool): Whether PDF is password protected
