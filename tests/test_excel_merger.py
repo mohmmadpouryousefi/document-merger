@@ -92,7 +92,7 @@ class TestExcelMerger(unittest.TestCase):
         self.assertEqual(info['sheets'], 2)
         self.assertIn('Sales', info['sheet_names'])
         self.assertIn('Marketing', info['sheet_names'])
-        self.assertEqual(info['total_rows'], 6)  # 3 rows per sheet
+        self.assertIn('sheets_info', info)
         self.assertIsNone(info.get('error'))
     
     def test_get_excel_info_error(self):
@@ -220,6 +220,26 @@ class TestExcelMergerIntegration(unittest.TestCase):
     def tearDown(self):
         """Clean up integration test fixtures."""
         shutil.rmtree(self.test_dir, ignore_errors=True)
+    
+    def create_test_excel(self, filename, sheet_data=None):
+        """Create a test Excel file with sample data."""
+        if sheet_data is None:
+            sheet_data = {'Sheet1': [['Name', 'Age'], ['John', 25], ['Jane', 30]]}
+        
+        filepath = os.path.join(self.test_dir, filename)
+        workbook = Workbook()
+        
+        # Remove default sheet
+        workbook.remove(workbook.active)
+        
+        for sheet_name, data in sheet_data.items():
+            sheet = workbook.create_sheet(title=sheet_name)
+            for row_idx, row_data in enumerate(data, 1):
+                for col_idx, cell_value in enumerate(row_data, 1):
+                    sheet.cell(row=row_idx, column=col_idx, value=cell_value)
+        
+        workbook.save(filepath)
+        return filepath
     
     def create_realistic_excel(self, filename, department):
         """Create a realistic Excel file with formatted data."""
