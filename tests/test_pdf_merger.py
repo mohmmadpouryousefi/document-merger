@@ -279,6 +279,9 @@ class TestPDFMergerIntegration(unittest.TestCase):
             # If reportlab is not available, skip integration tests
             self.skipTest("reportlab not available for integration testing")
 
+    @unittest.skipIf(
+        sys.version_info < (3, 9), "reportlab compatibility issue with Python < 3.9"
+    )
     def test_real_pdf_merge_integration(self):
         """Integration test with real PDF files."""
         try:
