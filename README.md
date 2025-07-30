@@ -66,7 +66,10 @@ document-merger/
     cli/              # Command line interface
         cli_interface.py    # CLI implementation
 
- docs/                 # Documentation (coming soon)
+ docs/                 # Documentation
+    examples/           # Usage examples and tutorials
+    api/               # API documentation
+    screenshots/        # Visual guides
 ```
 
 ##  Requirements
@@ -87,6 +90,22 @@ document-merger/
 ### Excel Files
 - **Input**: `.xlsx`, `.xls`, `.xlsm` files
 - **Features**: Multi-sheet merging, formula preservation, formatting retention
+
+##  Documentation
+
+### 📚 Comprehensive Guides
+- **[Getting Started](docs/examples/getting_started.md)** - First-time setup and basic usage
+- **[Common Use Cases](docs/examples/common_use_cases.md)** - Real-world scenarios and solutions
+- **[Python API Examples](docs/examples/python_api_examples.md)** - Programmatic usage examples
+- **[Troubleshooting Guide](docs/troubleshooting.md)** - Solutions to common issues
+
+### 🔧 API Reference
+- **[PDF Merger API](docs/api/pdf_merger.md)** - Detailed PDF merging documentation
+- **[API Overview](docs/api/README.md)** - Complete API reference
+
+### 📖 Examples
+- **[Examples Directory](docs/examples/)** - Practical usage examples
+- **[Automation Scripts](docs/examples/python_api_examples.md#automation-scripts)** - Scheduled and batch processing
 
 ##  Development
 
