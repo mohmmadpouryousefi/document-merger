@@ -166,9 +166,9 @@ class FileMerger:
         """Finalize the merge result based on success status."""
         if success:
             result["success"] = True
-            result[
-                "message"
-            ] = f"Successfully merged {len(accessible_files)} {file_type} files"
+            result["message"] = (
+                f"Successfully merged {len(accessible_files)} {file_type} files"
+            )
             self.logger.info(f"Merge completed: {result['message']}")
         else:
             result["message"] = f"Failed to merge {file_type} files"
